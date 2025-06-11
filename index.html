@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nasi Lemak Orders</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+    .container { background: #fff; padding: 25px; max-width: 1000px; margin: auto; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    h2 { text-align: center; margin-bottom: 20px; color: #2c3e50; }
+    label { font-weight: bold; display: block; margin: 10px 0 5px; }
+    input[type="text"], input[type="number"] { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+    .addons { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 10px; }
+    .addon-box { background: #ecf0f1; padding: 8px; border-radius: 6px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .addon-box:hover { background: #dfe6e9; }
+    .addon-box input[type="checkbox"] { transform: scale(1.2); accent-color: #3498db; }
+    .btn { margin-top: 10px; padding: 10px 20px; background: #3498db; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+    .btn-danger { background: #e74c3c; }
+    .btn-pdf { background: #2ecc71; float: right; margin-top: -50px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    th { background: #2c3e50; color: #fff; }
+    .total-row { font-weight: bold; background: #ecf0f1; }
+    .commission-row { font-style: italic; background: #f9f9f9; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>Nasi Lemak Order System</h2>
+  <form id="orderForm">
+    <label>Name</label><input type="text" id="name" required>
+    <label>Phone</label><input type="text" id="phone" required>
+    <label>Quantity of Nasi Lemak</label><input type="number" id="nasiQty" value="0" min="0" required>
+    <label>Add-ons</label>
+    <div class="addons">
+      <label class="addon-box"><input type="checkbox" value="1" data-name="Telur Mata"> Telur Mata (RM1)</label>
+      <label class="addon-box"><input type="checkbox" value="2" data-name="Sambal Sotong"> Sambal Sotong (RM2)</label>
+      <label class="addon-box"><input type="checkbox" value="2" data-name="Sambal Kerang"> Sambal Kerang (RM2)</label>
+      <label class="addon-box"><input type="checkbox" value="2" data-name="Ayam Goreng"> Ayam Goreng (RM2)</label>
+      <label class="addon-box"><input type="checkbox" value="2" data-name="Ayam Rendang"> Ayam Rendang (RM2)</label>
+      <label class="addon-box"><input type="checkbox" value="1" data-name="Nasi Tambah"> Nasi Tambah (RM1)</label>
+      <label class="addon-box"><input type="checkbox" value="1" data-name="Sambal Bilis"> Sambal Bilis (RM1)</label>
+    </div>
+    <button type="submit" class="btn">Add Order</button>
+  </form>
+  <button class="btn btn-pdf" onclick="downloadPDF()">Download PDF</button>
+  <div id="resultOnly">
+    <table id="orderTable">
+      <thead><tr>
+        <th>#</th><th>Name</th><th>Phone</th><th>Menu</th><th>Qty</th><th>Unit Price (RM)</th><th>Subtotal (RM)</th><th>Status</th><th>Remove</th>
+      </tr></thead>
+      <tbody id="orderBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const orders = [];
+  document.getElementById('orderForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const nasiQty = parseInt(document.getElementById('nasiQty').value);
+    const addons = Array.from(document.querySelectorAll('.addon-box input:checked'))
+      .map(cb => ({ name: cb.dataset.name, price: parseFloat(cb.value) }));
+    const addonNames = addons.map(a => a.name).join(' + ');
+    const addonTotal = addons.reduce((s,a)=>s+a.price,0);
+    let basePrice=0, quantity=1, runnerCommission=0, menu='';
+    if (nasiQty > 0) {
+      basePrice = 4;
+      quantity = nasiQty;
+      runnerCommission = nasiQty * 1;
+      menu = 'Nasi Lemak' + (addonNames ? ' + ' + addonNames : '');
+    } else {
+      basePrice = 0;
+      quantity = 1;
+      runnerCommission = 0;
+      menu = addonNames;
+    }
+    const unitPrice = basePrice + addonTotal;
+    const subtotal = unitPrice * quantity;
+    orders.push({ name, phone, menu, quantity, unitPrice, subtotal, runnerCommission, status: 'in-progress' });
+    this.reset();
+    document.getElementById('nasiQty').value = 0;
+    renderTable();
+  });
+
+  function renderTable() {
+    const tbody = document.getElementById('orderBody');
+    tbody.innerHTML = '';
+    const grouped = {};
+    orders.forEach((o,i) => { const key=o.name+'|'+o.phone; if(!grouped[key]) grouped[key]=[]; grouped[key].push({...o,index:i}); });
+    let rowNum=1;
+    for(const key in grouped) {
+      let total=0, commissionSum=0;
+      grouped[key].forEach(o=>{
+        total+=o.subtotal;
+        commissionSum+=o.runnerCommission;
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${rowNum++}</td><td>${o.name}</td><td>${o.phone}</td><td>${o.menu}</td>
+          <td>${o.quantity}</td><td>${o.unitPrice.toFixed(2)}</td><td>${o.subtotal.toFixed(2)}</td>
+          <td><select onchange="updateStatus(${o.index},this.value)">
+            <option ${o.status==='in-progress'?'selected':''}>in-progress</option>
+            <option ${o.status==='done'?'selected':''}>done</option>
+            <option ${o.status==='cancel'?'selected':''}>cancel</option>
+          </select></td>
+          <td><button class="btn btn-danger" onclick="removeOrder(${o.index})">Remove</button></td>`;
+        tbody.appendChild(tr);
+      });
+      const netTotal = total - commissionSum;
+      const trTotal = document.createElement('tr');
+      trTotal.className='total-row';
+      trTotal.innerHTML=`<td colspan="6">Total for ${grouped[key][0].name} (${grouped[key][0].phone})</td><td colspan="3">RM ${total.toFixed(2)}</td>`;
+      tbody.appendChild(trTotal);
+      const trComm = document.createElement('tr');
+      trComm.className='commission-row';
+      trComm.innerHTML=`<td colspan="6">Runner Commission (RM1 x Qty of Nasi Lemak)</td><td colspan="3">RM ${commissionSum.toFixed(2)} | Net Total: RM ${netTotal.toFixed(2)}</td>`;
+      tbody.appendChild(trComm);
+    }
+  }
+
+  function removeOrder(idx) { orders.splice(idx,1); renderTable(); }
+  function updateStatus(idx, val) { if(orders[idx]) orders[idx].status = val; }
+  function downloadPDF() {
+    html2pdf().from(document.getElementById('resultOnly')).set({
+      margin:0.3, filename:'nasi-lemak-orders.pdf',
+      image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'in',format:'a4',orientation:'portrait'}
+    }).save();
+  }
+</script>
+</body>
+</html>
