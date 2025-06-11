@@ -5,23 +5,121 @@
   <title>Nasi Lemak Orders</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
-    .container { background: #fff; padding: 25px; max-width: 1000px; margin: auto; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-    h2 { text-align: center; margin-bottom: 20px; color: #2c3e50; }
-    label { font-weight: bold; display: block; margin: 10px 0 5px; }
-    input[type="text"], input[type="number"] { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
-    .addons { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 10px; }
-    .addon-box { background: #ecf0f1; padding: 8px; border-radius: 6px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
-    .addon-box:hover { background: #dfe6e9; }
-    .addon-box input[type="checkbox"] { transform: scale(1.2); accent-color: #3498db; }
-    .btn { margin-top: 10px; padding: 10px 20px; background: #3498db; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
-    .btn-danger { background: #e74c3c; }
-    .btn-pdf { background: #2ecc71; float: right; margin-top: -50px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-    th { background: #2c3e50; color: #fff; }
-    .total-row { font-weight: bold; background: #ecf0f1; }
-    .commission-row { font-style: italic; background: #f9f9f9; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #dff9fb, #c7ecee);
+      margin: 0;
+      padding: 30px;
+    }
+    .container {
+      background: #ffffff;
+      padding: 30px;
+      max-width: 1050px;
+      margin: auto;
+      border-radius: 18px;
+      box-shadow: 0 20px 30px rgba(0, 0, 0, 0.15);
+    }
+    h2 {
+      text-align: center;
+      color: #2d3436;
+      margin-bottom: 25px;
+    }
+    label {
+      font-weight: bold;
+      margin: 12px 0 6px;
+      display: block;
+    }
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #b2bec3;
+      background: #f5f6fa;
+    }
+    .addons {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .addon-box {
+      padding: 12px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .addon-box:hover {
+      transform: scale(1.02);
+    }
+    .addon-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .addon-box input[type="checkbox"] {
+      transform: scale(1.2);
+      accent-color: #0984e3;
+    }
+    .btn {
+      margin-top: 16px;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .btn:hover { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+    .btn-danger { background: #d63031; }
+    .btn-pdf { background: #00b894; }
+    .btn-invoice { background: #0984e3; margin: 10px 0; }
+    .btn-add-addon { background: #fdcb6e; color: #2d3436; }
+    .delete-addon {
+      background: transparent;
+      border: none;
+      font-size: 16px;
+      color: #d63031;
+      cursor: pointer;
+    }
+    .btn-container {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .invoice-section {
+      text-align: center;
+      margin: 40px 0 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #dcdde1;
+      padding: 12px;
+      text-align: center;
+    }
+    th {
+      background: linear-gradient(135deg, #00cec9, #81ecec);
+      color: #2d3436;
+    }
+    .total-row {
+      background: #ffeaa7;
+      font-weight: bold;
+    }
+    .commission-row {
+      background: #f1f2f6;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -29,26 +127,27 @@
   <h2>Nasi Lemak Order System</h2>
   <form id="orderForm">
     <label>Name</label><input type="text" id="name" required>
-    <label>Phone</label><input type="text" id="phone" required>
+    <label>Notes</label><input type="text" id="notes">
     <label>Quantity of Nasi Lemak</label><input type="number" id="nasiQty" value="0" min="0" required>
     <label>Add-ons</label>
-    <div class="addons">
-      <label class="addon-box"><input type="checkbox" value="1" data-name="Telur Mata"> Telur Mata (RM1)</label>
-      <label class="addon-box"><input type="checkbox" value="2" data-name="Sambal Sotong"> Sambal Sotong (RM2)</label>
-      <label class="addon-box"><input type="checkbox" value="2" data-name="Sambal Kerang"> Sambal Kerang (RM2)</label>
-      <label class="addon-box"><input type="checkbox" value="2" data-name="Ayam Goreng"> Ayam Goreng (RM2)</label>
-      <label class="addon-box"><input type="checkbox" value="2" data-name="Ayam Rendang"> Ayam Rendang (RM2)</label>
-      <label class="addon-box"><input type="checkbox" value="1" data-name="Nasi Tambah"> Nasi Tambah (RM1)</label>
-      <label class="addon-box"><input type="checkbox" value="1" data-name="Sambal Bilis"> Sambal Bilis (RM1)</label>
+    <div class="addons" id="addonsContainer"></div>
+    <div class="btn-container">
+      <button type="button" class="btn btn-add-addon" onclick="addCustomAddon()">Add On +</button>
+      <button type="submit" class="btn">Add Order</button>
     </div>
-    <button type="submit" class="btn">Add Order</button>
   </form>
-  <button class="btn btn-pdf" onclick="downloadPDF()">Download PDF</button>
+
+  <div class="invoice-section">
+    <button class="btn btn-pdf" onclick="downloadPDF()">Download All Orders PDF</button>
+  </div>
+
   <div id="resultOnly">
     <table id="orderTable">
-      <thead><tr>
-        <th>#</th><th>Name</th><th>Phone</th><th>Menu</th><th>Qty</th><th>Unit Price (RM)</th><th>Subtotal (RM)</th><th>Status</th><th>Remove</th>
-      </tr></thead>
+      <thead>
+        <tr>
+          <th>#</th><th>Name</th><th>Notes</th><th>Menu</th><th>Qty</th><th>Unit Price (RM)</th><th>Subtotal (RM)</th><th>Date/Time</th><th>Status</th><th>Remove</th>
+        </tr>
+      </thead>
       <tbody id="orderBody"></tbody>
     </table>
   </div>
@@ -56,76 +155,169 @@
 
 <script>
   const orders = [];
+  const groupedOrders = {};
+  const addonsContainer = document.getElementById('addonsContainer');
+  const colors = ['#fab1a0', '#ff7675', '#ffeaa7', '#a29bfe', '#81ecec', '#74b9ff', '#55efc4', '#fd79a8', '#fdcb6e'];
+
+  const initialAddons = [
+    { name: "Telur Mata", price: 1.00 },
+    { name: "Sambal Sotong", price: 2.00 },
+    { name: "Sambal Kerang", price: 2.00 },
+    { name: "Ayam Goreng", price: 2.00 },
+    { name: "Ayam Rendang", price: 2.00 },
+    { name: "Nasi Tambah", price: 1.00 },
+    { name: "Extra Sambal Bilis", price: 1.00 }
+  ];
+
+  function renderAddon(name, price) {
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const wrapper = document.createElement('label');
+    wrapper.className = 'addon-box';
+    wrapper.style.background = color;
+    const id = 'addon_' + Math.random().toString(36).substring(7);
+    wrapper.setAttribute('id', id);
+    wrapper.innerHTML = `
+      <span class="addon-content">
+        <input type="checkbox" value="${price.toFixed(2)}" data-name="${name}">
+        ${name} (RM${price.toFixed(2)})
+      </span>
+      <button type="button" class="delete-addon" onclick="deleteAddon('${id}')">🗑️</button>
+    `;
+    addonsContainer.appendChild(wrapper);
+  }
+
+  initialAddons.forEach(a => renderAddon(a.name, a.price));
+
+  function deleteAddon(id) {
+    const elem = document.getElementById(id);
+    if (elem) elem.remove();
+  }
+
+  function addCustomAddon() {
+    const addonName = prompt('Enter new addon name:');
+    if (!addonName) return;
+    const addonPrice = prompt('Enter price for ' + addonName + ' (in RM):');
+    if (addonPrice === null || isNaN(addonPrice)) return;
+    renderAddon(addonName.trim(), parseFloat(addonPrice));
+  }
+
   document.getElementById('orderForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const name = document.getElementById('name').value.trim();
-    const phone = document.getElementById('phone').value.trim();
+    const notes = document.getElementById('notes').value.trim();
     const nasiQty = parseInt(document.getElementById('nasiQty').value);
     const addons = Array.from(document.querySelectorAll('.addon-box input:checked'))
       .map(cb => ({ name: cb.dataset.name, price: parseFloat(cb.value) }));
     const addonNames = addons.map(a => a.name).join(' + ');
-    const addonTotal = addons.reduce((s,a)=>s+a.price,0);
-    let basePrice=0, quantity=1, runnerCommission=0, menu='';
+    const addonTotal = addons.reduce((sum, a) => sum + a.price, 0);
+    let basePrice = 0, quantity = 1, runnerCommission = 0, menu = '';
     if (nasiQty > 0) {
       basePrice = 4;
       quantity = nasiQty;
       runnerCommission = nasiQty * 1;
       menu = 'Nasi Lemak' + (addonNames ? ' + ' + addonNames : '');
     } else {
-      basePrice = 0;
-      quantity = 1;
-      runnerCommission = 0;
       menu = addonNames;
     }
     const unitPrice = basePrice + addonTotal;
     const subtotal = unitPrice * quantity;
-    orders.push({ name, phone, menu, quantity, unitPrice, subtotal, runnerCommission, status: 'in-progress' });
+    const timestamp = new Date().toLocaleString();
+    orders.push({ name, notes, menu, quantity, unitPrice, subtotal, runnerCommission, timestamp, status: 'in-progress' });
+    renderTable();
     this.reset();
     document.getElementById('nasiQty').value = 0;
-    renderTable();
   });
 
   function renderTable() {
     const tbody = document.getElementById('orderBody');
     tbody.innerHTML = '';
+    Object.keys(groupedOrders).forEach(k => delete groupedOrders[k]);
+
     const grouped = {};
-    orders.forEach((o,i) => { const key=o.name+'|'+o.phone; if(!grouped[key]) grouped[key]=[]; grouped[key].push({...o,index:i}); });
-    let rowNum=1;
-    for(const key in grouped) {
-      let total=0, commissionSum=0;
-      grouped[key].forEach(o=>{
-        total+=o.subtotal;
-        commissionSum+=o.runnerCommission;
-        const tr=document.createElement('tr');
-        tr.innerHTML=`
-          <td>${rowNum++}</td><td>${o.name}</td><td>${o.phone}</td><td>${o.menu}</td>
+    orders.forEach((o, i) => {
+      const key = o.name.trim().toLowerCase();
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push({ ...o, index: i });
+    });
+
+    let rowNum = 1;
+    for (const key in grouped) {
+      const group = grouped[key];
+      const id = 'group_' + Math.random().toString(36).substring(2, 8);
+      groupedOrders[id] = group;
+
+      group.forEach(o => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${rowNum++}</td><td>${o.name}</td><td>${o.notes}</td><td>${o.menu}</td>
           <td>${o.quantity}</td><td>${o.unitPrice.toFixed(2)}</td><td>${o.subtotal.toFixed(2)}</td>
-          <td><select onchange="updateStatus(${o.index},this.value)">
-            <option ${o.status==='in-progress'?'selected':''}>in-progress</option>
-            <option ${o.status==='done'?'selected':''}>done</option>
-            <option ${o.status==='cancel'?'selected':''}>cancel</option>
+          <td>${o.timestamp}</td>
+          <td><select onchange="updateStatus(${o.index}, this.value)">
+            <option ${o.status === 'in-progress' ? 'selected' : ''}>in-progress</option>
+            <option ${o.status === 'done' ? 'selected' : ''}>done</option>
+            <option ${o.status === 'cancel' ? 'selected' : ''}>cancel</option>
           </select></td>
           <td><button class="btn btn-danger" onclick="removeOrder(${o.index})">Remove</button></td>`;
         tbody.appendChild(tr);
       });
-      const netTotal = total - commissionSum;
-      const trTotal = document.createElement('tr');
-      trTotal.className='total-row';
-      trTotal.innerHTML=`<td colspan="6">Total for ${grouped[key][0].name} (${grouped[key][0].phone})</td><td colspan="3">RM ${total.toFixed(2)}</td>`;
-      tbody.appendChild(trTotal);
-      const trComm = document.createElement('tr');
-      trComm.className='commission-row';
-      trComm.innerHTML=`<td colspan="6">Runner Commission (RM1 x Qty of Nasi Lemak)</td><td colspan="3">RM ${commissionSum.toFixed(2)} | Net Total: RM ${netTotal.toFixed(2)}</td>`;
-      tbody.appendChild(trComm);
+
+      const trInvoice = document.createElement('tr');
+      trInvoice.innerHTML = `<td colspan="10" style="text-align:left;">
+        <button class="btn btn-invoice" onclick="downloadInvoice('${id}')">Download E-Invoice for ${group[0].name}</button>
+      </td>`;
+      tbody.appendChild(trInvoice);
     }
   }
 
-  function removeOrder(idx) { orders.splice(idx,1); renderTable(); }
-  function updateStatus(idx, val) { if(orders[idx]) orders[idx].status = val; }
+  function updateStatus(idx, val) {
+    if (orders[idx]) orders[idx].status = val;
+  }
+
+  function removeOrder(idx) {
+    orders.splice(idx, 1);
+    renderTable();
+  }
+
   function downloadPDF() {
     html2pdf().from(document.getElementById('resultOnly')).set({
-      margin:0.3, filename:'nasi-lemak-orders.pdf',
-      image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'in',format:'a4',orientation:'portrait'}
+      margin: 0.3,
+      filename: 'nasi-lemak-orders.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    }).save();
+  }
+
+  function downloadInvoice(id) {
+    const group = groupedOrders[id];
+    if (!group) return;
+
+    const name = group[0].name;
+    const notes = group[0].notes;
+    const container = document.createElement('div');
+    const netTotal = group.reduce((sum, o) => sum + (o.subtotal - o.runnerCommission), 0);
+
+    container.innerHTML = `
+      <h3 style="text-align:center;">Nasi Lemak Rockstar</h3>
+      <p style="text-align:center;">371, Tmn Dusun Setia, 70100 Seremban, N. Sembilan</p>
+      <hr>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Notes:</strong> ${notes}</p>
+      <table border="1" style="width:100%; border-collapse:collapse; margin-top:10px;">
+        <thead><tr><th>Menu</th><th>Subtotal (RM)</th></tr></thead>
+        <tbody>
+          ${group.map(o => `<tr><td>${o.menu}</td><td style="text-align:right;">${(o.subtotal - o.runnerCommission).toFixed(2)}</td></tr>`).join('')}
+        </tbody>
+        <tfoot><tr><td><strong>Total</strong></td><td style="text-align:right;"><strong>RM ${netTotal.toFixed(2)}</strong></td></tr></tfoot>
+      </table>
+    `;
+
+    html2pdf().from(container).set({
+      margin: 0.3,
+      filename: `invoice-${name}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
     }).save();
   }
 </script>
